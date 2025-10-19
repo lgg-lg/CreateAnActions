@@ -1,0 +1,62 @@
+name: 自动更新
+# 工作流名称定义
+
+on:
+#触发条件定义
+#[git动作]例如[push]就是push后触发，多种间用英文逗号隔开，一个可以不包括号
+  schedule:
+   - cron: '0 20,8 * * *'
+   
+   #北京时间4点和16点运行一次 (github是西八区时间太平洋时区，到东八区差16小时)
+  workflow_dispatch:  
+  # 手动触发触发器
+    branches:
+    #触发时可选分支，就一个可以不写
+      - master
+jobs:
+  update:
+  #一个job 的名称可以自定义
+    runs-on: ubuntu-latest
+    #设置运行环境
+    steps:
+    #步骤合集
+      - name: Checkout 代码
+        #步骤1名称
+        uses: actions/checkout@v4 # 建议使用最新版 v4
+        #让环境自动拉取代码
+        # --- 可选：如果你需要特定的 fetch-depth ---
+        # with:
+        #   fetch-depth: 0 # 获取所有历史记录，如果需要的话
+
+      - name: 设置 Python
+        #步骤2名称
+        uses: actions/setup-python@v4 # 建议使用最新版 v4
+        #安装python环境
+        with:
+          python-version: '3.10' # 或者你项目使用的其他版本
+        #设置环境版本
+
+      - name: 安装依赖
+        run: |
+          pip install -r requirements.txt
+        
+      - name: 运行主程序
+      #步骤4名称
+        run: python main.py
+        #运行main.py
+
+      - name: 提交更新
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # 检查是否有文件被修改
+          git diff --quiet && git diff --staged --quiet || (
+            echo "检测到文件变更，准备提交..."
+            git add .
+            git commit -m "✅ 自动更新"
+            git push
+            echo "✅ 变更已推送到仓库。"
+          ) || (
+            echo "ℹ️ 没有检测到文件变更，无需提交。"
+          )
