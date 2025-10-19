@@ -8,8 +8,8 @@ import os
 
 def main():
     # 1. 检查文件是否存在
-    input_file = os.path.join("Data", "clean_titanic.csv")
-    if not os.path.exists(input_file):
+    file_path = os.path.join("Data", "clean_titanic.csv")
+    if not os.path.exists(file_path):
         print(f"错误：文件 {file_path} 不存在！")
         return
 
